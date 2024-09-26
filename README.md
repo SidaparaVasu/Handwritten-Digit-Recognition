@@ -40,7 +40,7 @@ TKinter Standard Python library: for creating graphical user interfaces
 Output:
 -------
 
-<img align="right" alt="output-1" width="auto" src="Outputs/output-1.png">
+<img align="left" alt="output-1" width="auto" src="Outputs/output-1.png">
 <img align="right" alt="output-2" width="auto" src="Outputs/output-2.png">
 <img align="right" alt="output-3" width="auto" src="Outputs/output-3.png">
 <img align="right" alt="output-4" width="auto" src="Outputs/output-4.png">
