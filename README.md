@@ -27,13 +27,13 @@ from keras.datasets import mnist
 Software Resources:
 -------------------
 
-Python Version: 3.6 or later (https://www.python.org/downloads/)
+Python Version: 3.6 or later (https://www.python.org/downloads/) <br/>
 TensorFlow: Deep learning framework for model construction and training
-(https://www.tensorflow.org/)
+(https://www.tensorflow.org/) <br/>
 Keras: High-level API for building and training neural networks
-(https://keras.io/)
+(https://keras.io/) <br/>
 NumPy Library: for numerical computations and array manipulation
-(https://numpy.org/)
+(https://numpy.org/) <br/>
 Matplotlib Library: for data visualization (https://matplotlib.org/)
 TKinter Standard Python library: for creating graphical user interfaces
 
