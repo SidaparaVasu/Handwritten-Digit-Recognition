@@ -1,89 +1,133 @@
 import tkinter as tk
 from tkinter import Canvas, Button, Label
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageGrab
 import numpy as np
 from keras.models import load_model
+import shutil
 import io
 
-# Load the trained model
-model = load_model('mnist_v4_99.48.h5')
+# -------------------------------
+# Utility Functions
+# -------------------------------
 
-# Initialize variables for drawing
-line_width = 10
-canvas_width = 280
-canvas_height = 280
-drawing = False
+def is_ghostscript_installed():
+    """
+    Check if Ghostscript is available in system PATH.
+    """
+    return shutil.which("gs") or shutil.which("gswin64c") or shutil.which("gswin32c")
 
-# Create a drawing area
+
+def capture_canvas(canvas, root):
+    """
+    Capture the canvas content as a grayscale PIL image.
+    Chooses method based on Ghostscript availability.
+    """
+    if use_ghostscript:
+        # Method using canvas.postscript
+        ps_data = canvas.postscript(colormode='color')
+        img = Image.open(io.BytesIO(ps_data.encode('utf-8')))
+        img = img.convert('L')
+    else:
+        # Method using ImageGrab
+        x = root.winfo_rootx() + canvas.winfo_x()
+        y = root.winfo_rooty() + canvas.winfo_y()
+        x1 = x + canvas.winfo_width()
+        y1 = y + canvas.winfo_height()
+        img = ImageGrab.grab().crop((x, y, x1, y1)).convert('L')
+    return img
+
+
+def preprocess_image(img):
+    """
+    Resize to 28x28, invert colors, normalize, and reshape for model input.
+    """
+    img = img.resize((28, 28))
+    img = ImageOps.invert(img)
+    img_array = np.array(img) / 255.0
+    return img_array.reshape(1, 28, 28, 1)
+
+
+# -------------------------------
+# Application Functions
+# -------------------------------
+
 def start_drawing(event):
     global drawing
     drawing = True
 
 def draw(event):
-    global drawing
     if drawing:
         x, y = event.x, event.y
-        canvas.create_oval(x - line_width, y - line_width, x + line_width, y + line_width, fill='black', outline='black')
+        canvas.create_oval(
+            x - line_width, y - line_width,
+            x + line_width, y + line_width,
+            fill='black', outline='black'
+        )
 
 def stop_drawing(event):
     global drawing
     drawing = False
 
-# Function to recognize the digit
 def recognize_digit():
-    global canvas
-    
-    # Convert the canvas content to an image
-    canvas_image = Image.new('L', (canvas_width, canvas_height), 'white') # 'L' indicates that it's a grayscale image.
-    ps_data = canvas.postscript(colormode='color')
-    img = Image.open(io.BytesIO(ps_data.encode('utf-8')))
-    canvas_image.paste(img, (10, 10))
-    
-    # Resize and normalize the image
-    img = canvas_image.resize((28, 28))
-    img = ImageOps.invert(img)
-    img_array = np.array(img) / 255.0
-    img_array = img_array.reshape(1, 28, 28, 1)
-    
-    # Predict the digit using the loaded model
-    prediction = model.predict(img_array)
-    
-    # Get the predicted digit (the class with the highest probability)
-    digit = np.argmax(prediction)
-    
-    # Update the label with the recognized digit
-    result_label.config(text=f"Recognized Digit: {digit} : {prediction}")
+    """
+    Capture canvas, preprocess, predict using model, and display result.
+    """
+    img = capture_canvas(canvas, root)
+    img_array = preprocess_image(img)
 
-# Function to clear the canvas
+    prediction = model.predict(img_array)
+    digit = np.argmax(prediction)
+
+    result_label.config(text=f"Recognized Digit: {digit} : {np.round(prediction[0], 3)}")
+
 def clear_canvas():
     canvas.delete("all")
-    result_label.config(text="")  # Set the text to an empty string
+    result_label.config(text="")
 
-# Create the main window
+
+# -------------------------------
+# Main Program
+# -------------------------------
+
+# Load model
+model = load_model('./Models/mnist_v1_99.51.h5')
+
+# Check Ghostscript availability
+use_ghostscript = is_ghostscript_installed()
+if use_ghostscript:
+    print("Ghostscript detected: using PostScript method.")
+else:
+    print("Ghostscript not detected: using ImageGrab method.")
+
+# Initialize drawing variables
+line_width = 10
+canvas_width = 280
+canvas_height = 280
+drawing = False
+
+# Create main window
 root = tk.Tk()
 root.title("Digit Recognition")
 
-# Create a canvas for drawing
+# Create Canvas
 canvas = Canvas(root, bg='white', width=canvas_width, height=canvas_height)
-canvas.pack()
+canvas.pack(pady=10)
 
-# Create a Recognize button
+# Buttons
 recognize_button = Button(root, text="Recognize Digit", command=recognize_digit)
-recognize_button.pack()
+recognize_button.pack(pady=5)
 
-# Create a Clear Screen button
 clear_button = Button(root, text="Clear Screen", command=clear_canvas)
-clear_button.pack(expand = True)
+clear_button.pack(pady=5)
 
-# Create a label to display the recognized digit
+# Label to display results
 result_label = Label(root, text="", font=("Helvetica", 12))
-result_label.pack()
+result_label.pack(pady=5)
 
-
-# Bind mouse events to the canvas
+# Bind drawing events
 canvas.bind("<Button-1>", start_drawing)
 canvas.bind("<B1-Motion>", draw)
 canvas.bind("<ButtonRelease-1>", stop_drawing)
 
-# Start the Tkinter main loop
+# Start Tkinter main loop
 root.mainloop()
