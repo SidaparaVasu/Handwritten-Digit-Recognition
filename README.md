@@ -1,13 +1,9 @@
 # Handwritten Digit Recognition
 
-This project triumphantly tackles the challenge of recognizing handwritten digits
-with remarkable accuracy, harnessing the power of Convolutional Neural
-Networks (CNNs). The project deftly employs the MNIST dataset, a renowned
-benchmark in the realm of image classification, to meticulously train and evaluate
-its model. Through a judicious blend of data augmentation, hyperparameter
-tuning, and regularization techniques, the project achieves a commendable
-accuracy of 99.51% on the MNIST test set, showcasing its effectiveness in
-deciphering handwritten numerical characters. 
+This is a GUI-based handwritten digit recognition project built using a Convolutional Neural Network (CNN).
+Users can draw a digit (0–9) on a canvas, and the trained model predicts the digit in real time.
+
+The model is trained on the MNIST dataset and achieves 99.51% accuracy on the test set.
 
 
 Dataset:
